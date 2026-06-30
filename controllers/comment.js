@@ -48,7 +48,9 @@ const handleGetComment = async (req, res, next) => {
         .populate({
           path: "post",
           select: "-comments",
-        }),
+        })
+        .skip(skip)
+        .limit(limit),
       Comment.countDocuments({ user: req.user._id }),
     ]);
 
