@@ -36,4 +36,92 @@ const handleAddComment = async (req, res, next) => {
   }
 };
 
-module.exports = { handleAddComment };
+const handleGetComment = async (req, res, next) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, parseInt(req.query.limit) || 10);
+  const skip = (page - 1) * limit;
+
+  try {
+    const [comments, total] = await Promise.all([
+      Comment.find({ user: req.user._id })
+        .populate("user", "-password")
+        .populate({
+          path: "post",
+          select: "-comments",
+        }),
+      Comment.countDocuments({ user: req.user._id }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      comments: comments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasPrev: page > 1,
+        totalPages: page < Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleUpdateCommentById = async (req, res, next) => {
+  const { comment } = req.body;
+  const { commentId } = req.params;
+
+  if (!comment)
+    return res
+      .status(400)
+      .json({ success: false, message: "Comment is required" });
+
+  try {
+    const postComment = await Comment.findByIdAndUpdate(
+      commentId,
+      {
+        comment: comment,
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!postComment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment id not found" });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Commented updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleDeleteCommentById = async (req, res, next) => {
+  const { commentId } = req.params;
+
+  try {
+    const postComment = await Comment.findByIdAndDelete(commentId);
+
+    if (!postComment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment id not found" });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Comment deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  handleAddComment,
+  handleGetComment,
+  handleUpdateCommentById,
+  handleDeleteCommentById,
+};

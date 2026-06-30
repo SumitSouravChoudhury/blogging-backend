@@ -111,4 +111,28 @@ const handleUpdatePostById = async (req, res, next) => {
   }
 };
 
-module.exports = { handleAddPost, handleGetPost, handleUpdatePostById };
+const handleDeletePostById = async (req, res, next) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await Post.findByIdAndDelete(postId);
+
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post id not found" });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Post deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  handleAddPost,
+  handleGetPost,
+  handleUpdatePostById,
+  handleDeletePostById,
+};
