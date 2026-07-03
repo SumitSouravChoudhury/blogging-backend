@@ -56,11 +56,11 @@ const handleUpdateUserById = async (req, res, next) => {
 
   const { fullName, email, password, role } = req.body;
 
-  if (!fullName && !email && !password && !role)
+  if (!fullName && !email && !password && !role && !req.file)
     return res.status(400).json({
       success: false,
       message:
-        "At least one field (fullName, email, password, role) is required",
+        "At least one field (fullName, email, password, role, photo) is required",
     });
 
   try {
@@ -70,6 +70,7 @@ const handleUpdateUserById = async (req, res, next) => {
     if (email) updates.email = email;
     if (password) updates.password = await hashPassword(password);
     if (role) updates.role = role;
+    if (req.file) updates.photo = req.file.path;
 
     const user = await User.findByIdAndUpdate(userId, updates, {
       new: true,

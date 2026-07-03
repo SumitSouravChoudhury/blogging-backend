@@ -20,6 +20,10 @@ const userSchema = new Schema(
       enum: ["admin", "user"],
       default: "user",
     },
+    photo: {
+      type: String,
+      default: "/images/defaultProfileImage.svg",
+    },
   },
   { timestamps: true },
 );

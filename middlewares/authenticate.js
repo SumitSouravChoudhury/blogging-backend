@@ -16,9 +16,11 @@ const authenticate = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid or expired token" });
+    const message =
+      error.name === "TokenExpiredError"
+        ? "Token expired, please login again"
+        : "Invalid token";
+    return res.status(401).json({ success: false, message });
   }
 };
 
